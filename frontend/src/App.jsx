@@ -7,6 +7,7 @@ import { Toaster } from "./components/ui/sonner";
 import SplashPage from "./pages/SplashPage";
 import LoginPage from "./pages/LoginPage";
 import BrowsePage from "./pages/BrowsePage";
+import AliExpressPage from "./pages/AliExpressPage";
 import CartPage from "./pages/CartPage";
 import AddressesPage from "./pages/AddressesPage";
 import PaymentPage from "./pages/PaymentPage";
