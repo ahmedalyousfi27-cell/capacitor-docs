@@ -149,7 +149,7 @@ const AdminOrders = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">{order.items?.length} منتج</p>
-                    <p className="font-bold gradient-text">${order.grand_total?.toFixed(2)}</p>
+                    <p className="font-bold gradient-text">{order.grand_total?.toFixed(2)} SAR</p>
                   </div>
                   <Button
                     data-testid={`view-order-${order.order_id}`}
