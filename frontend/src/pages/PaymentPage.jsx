@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowRight, CreditCard, Building2, Wallet, Banknote, Check } from "lucide-react";
+import { ArrowRight, CreditCard, Building2, Wallet, Banknote, Check, Search, Truck, Clock } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 
@@ -21,6 +21,7 @@ const PaymentPage = () => {
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedMethod, setSelectedMethod] = useState(null);
+  const [enableInspection, setEnableInspection] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -46,6 +47,10 @@ const PaymentPage = () => {
     return settings.bank_accounts.find(a => a.name === methodNames[methodId]);
   };
 
+  // Calculate inspection fee (5 SAR per item)
+  const inspectionFee = enableInspection ? (order?.items?.length || 0) * 5 : 0;
+  const grandTotalWithInspection = (order?.grand_total || 0) + inspectionFee;
+
   const handleContinue = () => {
     if (!selectedMethod) {
       toast.error("يرجى اختيار وسيلة الدفع");
@@ -55,7 +60,10 @@ const PaymentPage = () => {
       state: { 
         method: selectedMethod, 
         accountInfo: getAccountInfo(selectedMethod),
-        order 
+        order,
+        enableInspection,
+        inspectionFee,
+        grandTotalWithInspection
       } 
     });
   };
@@ -103,19 +111,64 @@ const PaymentPage = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">المنتجات ({order?.items?.length})</span>
-              <span className="font-medium">${order?.total_price?.toFixed(2)}</span>
+              <span className="font-medium">{order?.total_price?.toFixed(2)} SAR</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">عمولة الخدمة ({settings?.commission_rate || 10}%)</span>
-              <span className="font-medium">${order?.commission?.toFixed(2)}</span>
+              <span className="font-medium">{order?.commission?.toFixed(2)} SAR</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">رسوم الشحن</span>
-              <span className="font-medium">${order?.shipping_fee?.toFixed(2)}</span>
+              <span className="font-medium">{order?.shipping_fee?.toFixed(2)} SAR</span>
             </div>
+            {enableInspection && (
+              <div className="flex justify-between text-purple-600">
+                <span>رسوم الفحص ({order?.items?.length} منتج)</span>
+                <span className="font-medium">{inspectionFee.toFixed(2)} SAR</span>
+              </div>
+            )}
             <div className="flex justify-between pt-2 border-t border-gray-200">
               <span className="font-bold text-gray-800">الإجمالي</span>
-              <span className="font-bold text-lg gradient-text">${order?.grand_total?.toFixed(2)}</span>
+              <span className="font-bold text-lg gradient-text">{grandTotalWithInspection.toFixed(2)} SAR</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Shipping Options */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="glass rounded-2xl p-4 mb-6"
+        >
+          <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <Truck className="w-5 h-5 text-blue-600" />
+            خيارات الشحن
+          </h2>
+          
+          {/* Inspection Option */}
+          <label className="flex items-start gap-3 p-3 bg-purple-50 rounded-xl cursor-pointer mb-3">
+            <input
+              type="checkbox"
+              checked={enableInspection}
+              onChange={(e) => setEnableInspection(e.target.checked)}
+              className="w-5 h-5 rounded mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-purple-600" />
+                <span className="font-medium text-gray-800">فحص الطلب قبل الشحن</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">سنقوم بفحص جودة المنتجات قبل شحنها إليك (5 SAR لكل منتج)</p>
+            </div>
+          </label>
+
+          {/* Delivery Time */}
+          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+            <Clock className="w-5 h-5 text-blue-600" />
+            <div>
+              <span className="font-medium text-gray-800">وقت التوصيل المتوقع</span>
+              <p className="text-xs text-gray-500">15 - 22 يوم عمل</p>
             </div>
           </div>
         </motion.div>
@@ -132,7 +185,7 @@ const PaymentPage = () => {
                 key={method.id}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
                 onClick={() => setSelectedMethod(method.id)}
                 className={`glass rounded-2xl p-4 cursor-pointer transition-all ${
                   selectedMethod === method.id
@@ -173,6 +226,18 @@ const PaymentPage = () => {
             );
           })}
         </div>
+
+        {/* Payment Note */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-4 p-3 bg-amber-50 rounded-xl border border-amber-200"
+        >
+          <p className="text-sm text-amber-800 text-center">
+            💰 الدفع بالريال السعودي فقط (SAR)
+          </p>
+        </motion.div>
       </div>
 
       {/* Bottom Continue Button */}
@@ -188,7 +253,7 @@ const PaymentPage = () => {
           className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all disabled:opacity-50"
         >
           <CreditCard className="w-5 h-5 ml-2" />
-          متابعة
+          متابعة ({grandTotalWithInspection.toFixed(2)} SAR)
         </Button>
       </motion.div>
     </motion.div>
