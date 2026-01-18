@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
-// AliExpress Saudi Arabia URL with USD currency (Ship to Saudi Arabia)
-const ALIEXPRESS_URL = "https://www.aliexpress.com/w/wholesale.html?&ship_to=SA&currency=USD&g=y";
+// AliExpress Saudi Arabia direct URL - forces Saudi region regardless of IP
+const ALIEXPRESS_URL = "https://sa.aliexpress.com/";
 
 const AliExpressPage = () => {
   const navigate = useNavigate();
