@@ -394,7 +394,9 @@ async def create_order(data: OrderCreate, user: User = Depends(get_current_user)
     await db.orders.insert_one(doc)
     await db.cart.delete_many({"user_id": user.user_id})
     
-    return {"_id": 0, **doc}
+    # Return without _id field
+    doc.pop("_id", None)
+    return doc
 
 @api_router.post("/orders/{order_id}/payment")
 async def submit_payment(order_id: str, data: PaymentSubmit, user: User = Depends(get_current_user)):
