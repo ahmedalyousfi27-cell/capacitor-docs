@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
-// AliExpress Arabic - Fixed settings for currency and language (DO NOT CHANGE)
-const ALIEXPRESS_URL = "https://ar.aliexpress.com/?browser_id=9a44eb2d08ea4dac86cd665a5f1f1aca&aff_trace_key=null&aff_platform=msite&m_page_id=tzrnirurqcauomrz19bd300132912cfc56a4eab530&gclid=";
+// AliExpress Arabic - Fixed SAR currency and Arabic language (DO NOT CHANGE)
+const ALIEXPRESS_URL = "https://ar.aliexpress.com/?currencyCode=SAR&language=ar";
 
 const AliExpressPage = () => {
   const navigate = useNavigate();
@@ -104,7 +104,7 @@ const AliExpressPage = () => {
             </div>
             <div>
               <h1 className="text-white font-bold text-lg">علي إكسبريس</h1>
-              <p className="text-white/70 text-xs">الشحن للسعودية 🇸🇦 | USD</p>
+              <p className="text-white/70 text-xs">بالريال السعودي 🇸🇦 SAR</p>
             </div>
           </div>
         </div>
@@ -224,7 +224,7 @@ const AliExpressPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">السعر (دولار) *</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">السعر (ريال سعودي SAR) *</label>
                 <Input
                   data-testid="product-price-input"
                   type="number"
