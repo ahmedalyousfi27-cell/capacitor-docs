@@ -298,7 +298,9 @@ async def add_to_cart(data: CartItemCreate, user: User = Depends(get_current_use
     doc = item.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.cart.insert_one(doc)
-    return {"_id": 0, **doc}
+    # Return without _id field
+    doc.pop("_id", None)
+    return doc
 
 @api_router.put("/cart/{item_id}")
 async def update_cart_item(item_id: str, request: Request, user: User = Depends(get_current_user)):
