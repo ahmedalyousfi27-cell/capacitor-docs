@@ -10,9 +10,8 @@ import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
-// AliExpress with Saudi Arabia shipping destination and USD currency
-// Using wholesale page which loads more reliably
-const ALIEXPRESS_URL = "https://www.aliexpress.com/w/wholesale.html?catId=0&initiative_id=SB_20240101&SearchText=&shipToCountry=SA&currency=USD&g=y&page=1";
+// AliExpress Arabic - Fixed settings for currency and language (DO NOT CHANGE)
+const ALIEXPRESS_URL = "https://ar.aliexpress.com/?browser_id=9a44eb2d08ea4dac86cd665a5f1f1aca&aff_trace_key=null&aff_platform=msite&m_page_id=tzrnirurqcauomrz19bd300132912cfc56a4eab530&gclid=";
 
 const AliExpressPage = () => {
   const navigate = useNavigate();
