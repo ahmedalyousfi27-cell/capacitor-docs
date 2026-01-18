@@ -177,7 +177,7 @@ const AdminOrderDetail = () => {
                   </p>
                   <p className="text-sm mt-1">
                     <span className="text-gray-500">الكمية: {item.quantity}</span>
-                    <span className="font-bold text-blue-600 mr-2">${item.price.toFixed(2)}</span>
+                    <span className="font-bold text-blue-600 mr-2">{item.price.toFixed(2)} SAR</span>
                   </p>
                 </div>
               </div>
@@ -188,19 +188,19 @@ const AdminOrderDetail = () => {
           <div className="mt-4 pt-4 border-t border-gray-200 space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">المنتجات</span>
-              <span>${order?.total_price?.toFixed(2)}</span>
+              <span>{order?.total_price?.toFixed(2)} SAR</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">العمولة</span>
-              <span>${order?.commission?.toFixed(2)}</span>
+              <span>{order?.commission?.toFixed(2)} SAR</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">الشحن</span>
-              <span>${order?.shipping_fee?.toFixed(2)}</span>
+              <span>{order?.shipping_fee?.toFixed(2)} SAR</span>
             </div>
             <div className="flex justify-between font-bold text-lg pt-2 border-t">
               <span>الإجمالي</span>
-              <span className="gradient-text">${order?.grand_total?.toFixed(2)}</span>
+              <span className="gradient-text">{order?.grand_total?.toFixed(2)} SAR</span>
             </div>
           </div>
         </motion.div>
