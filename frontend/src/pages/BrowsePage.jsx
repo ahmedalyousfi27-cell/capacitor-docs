@@ -116,7 +116,7 @@ const BrowsePage = () => {
               </div>
               
               <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
-                <span className="text-sm font-medium">USD</span>
+                <span className="text-sm font-medium">SAR</span>
                 <span className="text-xs">🇸🇦</span>
               </div>
             </div>
