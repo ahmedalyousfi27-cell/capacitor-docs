@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
-// AliExpress Arabic version with Saudi region settings
-const ALIEXPRESS_URL = "https://ar.aliexpress.com/w/wholesale.html?shipFromCountry=&shipToCountry=SA&CatId=0&g=y&SearchText=&currency=USD";
+// AliExpress Arabic version with Saudi Arabia shipping and USD currency
+const ALIEXPRESS_URL = "https://ar.aliexpress.com/?aff_platform=portals-tool&sk=&aff_trace_key=&af=&terminal_id=&tmLog=&shipToCountry=SA&currency=USD";
 
 const AliExpressPage = () => {
   const navigate = useNavigate();
