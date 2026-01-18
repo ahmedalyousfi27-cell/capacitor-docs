@@ -274,7 +274,9 @@ async def create_address(data: AddressCreate, user: User = Depends(get_current_u
     doc = address.model_dump()
     doc["created_at"] = doc["created_at"].isoformat()
     await db.addresses.insert_one(doc)
-    return {"_id": 0, **doc}
+    # Return without _id field
+    doc.pop("_id", None)
+    return doc
 
 @api_router.delete("/addresses/{address_id}")
 async def delete_address(address_id: str, user: User = Depends(get_current_user)):
