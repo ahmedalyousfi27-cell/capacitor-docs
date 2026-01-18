@@ -1,0 +1,135 @@
+{
+  "project_name": "Wo6ol | وصول",
+  "design_philosophy": {
+    "identity": "E1: The Anti-AI Designer",
+    "core_concept": "Glassmorphism + Animated Gradients (Arabic RTL)",
+    "vibe": "Smart, Friendly, Local yet Global",
+    "theme_strategy": "Day Glass (Light Mode) with Deep Night option",
+    "rtl_strategy": "Mirror everything. Navigation starts right. Back buttons point right."
+  },
+  "typography": {
+    "font_family": "Tajawal, sans-serif",
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "bold": 700,
+      "extra_bold": 800
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+      "h2": "text-3xl font-bold tracking-tight",
+      "h3": "text-2xl font-bold",
+      "body": "text-base leading-relaxed",
+      "small": "text-sm text-muted-foreground"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": "#2563EB",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#7C3AED",
+      "secondary_foreground": "#FFFFFF",
+      "background": "#F3F4F6",
+      "foreground": "#1F2937",
+      "card": "rgba(255, 255, 255, 0.65)",
+      "card_foreground": "#1F2937",
+      "border": "rgba(255, 255, 255, 0.4)",
+      "input": "rgba(255, 255, 255, 0.5)",
+      "ring": "#2563EB"
+    },
+    "gradients": {
+      "brand": "bg-gradient-to-br from-[#2563EB] to-[#7C3AED]",
+      "glass_surface": "bg-white/60 backdrop-blur-xl border border-white/40 shadow-lg",
+      "aurora_bg": "bg-gradient-to-tr from-blue-100 via-purple-100 to-white"
+    }
+  },
+  "layout": {
+    "direction": "rtl",
+    "container": "max-w-md mx-auto min-h-screen bg-[#F3F4F6] shadow-2xl overflow-hidden relative",
+    "spacing": {
+      "page_padding": "p-6",
+      "section_gap": "gap-6",
+      "element_gap": "gap-4"
+    },
+    "grid_system": "grid grid-cols-1 md:grid-cols-2 gap-6"
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 rounded-xl h-12 font-bold",
+      "secondary": "bg-white/50 text-blue-700 border border-blue-200 hover:bg-white/80 hover:border-blue-300 transition-all rounded-xl h-12 font-medium",
+      "ghost": "hover:bg-blue-50 text-blue-600 transition-colors rounded-lg"
+    },
+    "cards": {
+      "glass": "bg-white/70 backdrop-blur-md border border-white/50 shadow-sm rounded-2xl p-6 hover:shadow-md transition-shadow",
+      "product": "bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
+    },
+    "inputs": {
+      "glass": "bg-white/50 border-white/60 focus:border-blue-500 focus:ring-2 focus:ring-blue-200/50 rounded-xl h-12 backdrop-blur-sm transition-all"
+    },
+    "navigation": {
+      "bottom_bar": "fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-white/50 h-20 flex items-center justify-around z-50 pb-2"
+    }
+  },
+  "motion": {
+    "library": "framer-motion",
+    "variants": {
+      "page_transition": {
+        "initial": { "opacity": 0, "x": 20 },
+        "animate": { "opacity": 1, "x": 0 },
+        "exit": { "opacity": 0, "x": -20 },
+        "transition": { "duration": 0.3 }
+      },
+      "stagger_container": {
+        "hidden": { "opacity": 0 },
+        "show": {
+          "opacity": 1,
+          "transition": { "staggerChildren": 0.1 }
+        }
+      },
+      "fade_up": {
+        "hidden": { "opacity": 0, "y": 20 },
+        "show": { "opacity": 1, "y": 0 }
+      }
+    }
+  },
+  "assets": {
+    "images": {
+      "splash_hero": "https://images.unsplash.com/photo-1735725198732-536c145e3c83?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHwyfHxoYXBweSUyMGFyYWIlMjBwZXJzb24lMjBzaG9wcGluZyUyMG1vYmlsZXxlbnwwfHx8fDE3Njg3Njg2MDF8MA&ixlib=rb-4.1.0&q=85",
+      "login_bg": "https://images.unsplash.com/photo-1676269098436-ed2a1a79e2b2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGJsdWUlMjBwdXJwbGUlMjBncmFkaWVudCUyMGdsYXNzJTIwM2R8ZW58MHx8fHwxNzY4NzY4NTk4fDA&ixlib=rb-4.1.0&q=85",
+      "delivery_tracking": "https://images.unsplash.com/photo-1712481852417-ddc778ad6432?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDF8MHwxfHNlYXJjaHwxfHwzZCUyMGRlbGl2ZXJ5JTIwc2Nvb3RlciUyMGZhc3R8ZW58MHx8fHwxNzY4NzY4NjAzfDA&ixlib=rb-4.1.0&q=85",
+      "payment_success": "https://images.unsplash.com/photo-1757743320331-f59b03acc752?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Nzh8MHwxfHNlYXJjaHw0fHxoYXBweSUyMGFyYWIlMjBwZXJzb24lMjBzaG9wcGluZyUyMG1vYmlsZXxlbnwwfHx8fDE3Njg3Njg2MDF8MA&ixlib=rb-4.1.0&q=85"
+    },
+    "icons": {
+      "library": "lucide-react",
+      "mapping": {
+        "home": "Home",
+        "cart": "ShoppingBag",
+        "profile": "User",
+        "search": "Search",
+        "back": "ArrowRight",
+        "menu": "Menu",
+        "payment": "CreditCard",
+        "tracking": "MapPin"
+      }
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. SETUP: Ensure 'lucide-react', 'framer-motion', 'clsx', 'tailwind-merge' are installed.",
+    "2. RTL: Add 'dir=rtl' to the root <html> or <body> tag immediately.",
+    "3. FONT: Import 'Tajawal' from Google Fonts in index.css (@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');).",
+    "4. THEME: Update 'tailwind.config.js' and 'index.css' with the provided color palette. Use CSS variables for flexibility.",
+    "5. COMPONENTS: Customize Shadcn components. Remove default 'rounded-md' and use 'rounded-xl' or 'rounded-2xl'. Increase padding. Add backdrop-blur to cards.",
+    "6. ANIMATION: Wrap page content in <motion.div> with the 'page_transition' variant.",
+    "7. MOCK DATA: Create a 'mockData.js' file for products, orders, and user info to make the UI functional.",
+    "8. ALIEXPRESS: Use an iframe for the AliExpress browse page, but wrap it in a nice glass container with a custom header.",
+    "9. FILE EXTENSION: Use .jsx for all React components."
+  ],
+  "universal_guidelines": [
+    "Do not use generic centered layouts.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "All interactive elements MUST include data-testid."
+  ]
+}
