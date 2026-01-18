@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { ArrowRight, Upload, Check, Camera, X } from "lucide-react";
+import { ArrowRight, Upload, Check, Camera, X, FileText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ const PaymentConfirmPage = () => {
   const navigate = useNavigate();
   const { orderId } = useParams();
   const location = useLocation();
-  const { method, accountInfo, order } = location.state || {};
+  const { method, accountInfo, order, enableInspection, inspectionFee, grandTotalWithInspection } = location.state || {};
   
   const [formData, setFormData] = useState({
     sender_name: "",
@@ -108,13 +108,18 @@ const PaymentConfirmPage = () => {
           <h1 className="text-2xl font-bold text-gray-800 mb-2">تم استلام طلبك!</h1>
           <p className="text-gray-600 mb-6">سيتم مراجعة التحويل وتحديث حالة الطلب قريباً</p>
           
-          <div className="bg-blue-50 rounded-xl p-4 mb-6">
+          <div className="bg-blue-50 rounded-xl p-4 mb-4">
             <p className="text-sm text-blue-600">رقم الطلب</p>
             <p className="font-bold text-lg text-blue-800">{orderId}</p>
           </div>
+
+          <div className="bg-purple-50 rounded-xl p-4 mb-6">
+            <p className="text-sm text-purple-600">المبلغ المدفوع</p>
+            <p className="font-bold text-lg text-purple-800">{grandTotalWithInspection?.toFixed(2) || order?.grand_total?.toFixed(2)} SAR</p>
+          </div>
           
           <p className="text-sm text-gray-500 mb-6">
-            الحالة الحالية: <span className="text-amber-600 font-medium">قيد المراجعة</span>
+            الحالة الحالية: <span className="text-amber-600 font-medium">⏳ قيد المراجعة</span>
           </p>
           
           <div className="space-y-3">
@@ -185,9 +190,39 @@ const PaymentConfirmPage = () => {
             )}
             <div className="mt-3 pt-3 border-t border-white/20">
               <p className="text-white/80 text-sm">المبلغ المطلوب</p>
-              <p className="font-bold text-2xl">${order?.grand_total?.toFixed(2)}</p>
+              <p className="font-bold text-2xl">{grandTotalWithInspection?.toFixed(2) || order?.grand_total?.toFixed(2)} SAR</p>
+              {enableInspection && (
+                <p className="text-white/70 text-xs mt-1">شامل رسوم الفحص: {inspectionFee?.toFixed(2)} SAR</p>
+              )}
             </div>
           </div>
+        </motion.div>
+
+        {/* Transfer Instructions */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="glass rounded-2xl p-4"
+        >
+          <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-blue-600" />
+            تعليمات التحويل
+          </h2>
+          <ol className="space-y-2 text-sm text-gray-600">
+            <li className="flex items-start gap-2">
+              <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
+              <span>قم بتحويل المبلغ إلى الحساب المذكور أعلاه</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
+              <span>احتفظ برقم المرجع / التحويل</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
+              <span>أدخل البيانات أدناه وأرفق صورة الإيصال</span>
+            </li>
+          </ol>
         </motion.div>
 
         {/* Payment Form */}
@@ -223,11 +258,11 @@ const PaymentConfirmPage = () => {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1 block">صورة الإيصال (اختياري)</label>
+            <label className="text-sm font-medium text-gray-700 mb-1 block">صورة الإيصال (JPG, PNG, PDF)</label>
             <input
               type="file"
               ref={fileInputRef}
-              accept="image/*"
+              accept="image/*,.pdf"
               onChange={handleImageUpload}
               className="hidden"
             />
@@ -258,11 +293,12 @@ const PaymentConfirmPage = () => {
           </div>
         </motion.div>
 
-        {/* Submit Button */}
+        {/* Buttons */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.4 }}
+          className="space-y-3"
         >
           <Button
             data-testid="confirm-payment-btn"
@@ -275,9 +311,18 @@ const PaymentConfirmPage = () => {
             ) : (
               <>
                 <Check className="w-5 h-5 ml-2" />
-                تم التحويل ✅
+                إرسال التأكيد
               </>
             )}
+          </Button>
+
+          <Button
+            data-testid="cancel-btn"
+            onClick={() => navigate(`/payment/${orderId}`)}
+            variant="outline"
+            className="w-full h-12 rounded-xl"
+          >
+            إلغاء
           </Button>
         </motion.div>
       </div>
