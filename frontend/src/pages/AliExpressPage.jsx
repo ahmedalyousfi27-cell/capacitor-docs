@@ -10,8 +10,8 @@ import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
-// AliExpress Saudi Arabia URL with SAR currency
-const ALIEXPRESS_URL = "https://ar.aliexpress.com/?aff_fcid=&aff_fsk=&aff_platform=portals-search-bar&sk=&aff_trace_key=&af=&cv=&cn=&dp=&terminal_id=&afSmart498Site=&gatewayAda498pter=&language=ar&currency=SAR&region=SA";
+// AliExpress Saudi Arabia URL with USD currency (Ship to Saudi Arabia)
+const ALIEXPRESS_URL = "https://www.aliexpress.com/w/wholesale.html?&ship_to=SA&currency=USD&g=y";
 
 const AliExpressPage = () => {
   const navigate = useNavigate();
@@ -224,7 +224,7 @@ const AliExpressPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">السعر (ريال سعودي) *</label>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">السعر (دولار) *</label>
                 <Input
                   data-testid="product-price-input"
                   type="number"
