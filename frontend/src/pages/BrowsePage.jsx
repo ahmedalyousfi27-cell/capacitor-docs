@@ -1,12 +1,8 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ShoppingBag, Plus, X, Minus, Home, Package, User, ExternalLink } from "lucide-react";
+import { ShoppingBag, Package, User, Home, ExternalLink, Sparkles, TrendingUp, Truck, Shield } from "lucide-react";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
-import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
@@ -15,17 +11,6 @@ const BrowsePage = () => {
   const location = useLocation();
   const [user, setUser] = useState(location.state?.user || null);
   const [cartCount, setCartCount] = useState(0);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [productData, setProductData] = useState({
-    product_name: "",
-    product_url: "",
-    product_image: "",
-    price: "",
-    quantity: 1,
-    size: "",
-    color: "",
-    notes: ""
-  });
 
   useEffect(() => {
     // Fetch user if not in state
@@ -42,44 +27,11 @@ const BrowsePage = () => {
       .catch(console.error);
   }, [user]);
 
-  const handleAddToCart = async () => {
-    if (!productData.product_name || !productData.price) {
-      toast.error("يرجى إدخال اسم المنتج والسعر");
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/cart`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          ...productData,
-          price: parseFloat(productData.price),
-          product_url: productData.product_url || "https://ar.aliexpress.com",
-          product_image: productData.product_image || "https://via.placeholder.com/150"
-        })
-      });
-
-      if (response.ok) {
-        toast.success("تمت إضافة المنتج للسلة");
-        setCartCount(prev => prev + 1);
-        setShowAddModal(false);
-        setProductData({
-          product_name: "",
-          product_url: "",
-          product_image: "",
-          price: "",
-          quantity: 1,
-          size: "",
-          color: "",
-          notes: ""
-        });
-      }
-    } catch (error) {
-      toast.error("حدث خطأ أثناء الإضافة");
-    }
-  };
+  const features = [
+    { icon: TrendingUp, title: "أفضل الأسعار", desc: "خصومات حصرية" },
+    { icon: Truck, title: "شحن سريع", desc: "توصيل مضمون" },
+    { icon: Shield, title: "ضمان الجودة", desc: "منتجات أصلية" },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-white pb-24">
@@ -128,78 +80,139 @@ const BrowsePage = () => {
         <p className="text-gray-600">تصفح منتجات علي إكسبريس وأضفها لسلتك</p>
       </motion.div>
 
-      {/* AliExpress iframe container */}
+      {/* AliExpress Card - Main CTA */}
       <motion.div
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4 }}
         className="px-4 mb-6"
       >
-        <div className="glass rounded-3xl overflow-hidden shadow-xl">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 flex items-center justify-between">
-            <span className="text-white font-medium">علي إكسبريس العربي</span>
-            <a
-              href="https://ar.aliexpress.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white/80 hover:text-white flex items-center gap-1 text-sm"
-            >
-              <span>فتح في نافذة جديدة</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
+        <motion.button
+          data-testid="aliexpress-card"
+          onClick={() => navigate("/aliexpress")}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full relative overflow-hidden rounded-3xl shadow-xl group"
+        >
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-500 via-red-500 to-red-600"></div>
+          
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          
+          {/* Content */}
+          <div className="relative p-6 text-white">
+            <div className="flex items-center justify-between mb-4">
+              {/* AliExpress Logo */}
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg">
+                  <span className="text-red-500 font-black text-xl">Ali</span>
+                </div>
+                <div className="text-right">
+                  <h2 className="text-2xl font-bold">علي إكسبريس</h2>
+                  <p className="text-white/80 text-sm">AliExpress</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full">
+                <span className="text-sm font-medium">SAR</span>
+                <span className="text-xs">🇸🇦</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <div className="bg-white/20 px-4 py-2 rounded-xl">
+                <p className="text-xs text-white/80">خصم حتى</p>
+                <p className="text-xl font-bold">70%</p>
+              </div>
+              <div className="bg-white/20 px-4 py-2 rounded-xl">
+                <p className="text-xs text-white/80">شحن مجاني</p>
+                <p className="text-xl font-bold">✓</p>
+              </div>
+              <div className="bg-white/20 px-4 py-2 rounded-xl">
+                <p className="text-xs text-white/80">منتجات</p>
+                <p className="text-xl font-bold">+1M</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="text-white/90 text-sm">اضغط لتصفح المنتجات</p>
+              <div className="flex items-center gap-2 bg-white text-red-500 px-4 py-2 rounded-xl font-bold group-hover:bg-white/90 transition-colors">
+                <span>تصفح الآن</span>
+                <ExternalLink className="w-4 h-4" />
+              </div>
+            </div>
           </div>
-          <div className="relative" style={{ height: "60vh" }}>
-            <iframe
-              data-testid="aliexpress-iframe"
-              src="https://ar.aliexpress.com"
-              className="w-full h-full border-0"
-              title="AliExpress"
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-            />
-          </div>
-        </div>
+        </motion.button>
       </motion.div>
 
-      {/* Instructions */}
+      {/* Features */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6 }}
         className="px-4 mb-6"
       >
+        <div className="grid grid-cols-3 gap-3">
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={index}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
+                className="glass rounded-2xl p-4 text-center"
+              >
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-bold text-gray-800 text-sm">{feature.title}</h3>
+                <p className="text-gray-500 text-xs mt-1">{feature.desc}</p>
+              </motion.div>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* How it works */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="px-4 mb-6"
+      >
         <div className="glass rounded-2xl p-4">
-          <h3 className="font-bold text-gray-800 mb-3">كيفية الطلب:</h3>
-          <ol className="space-y-2 text-gray-600 text-sm">
-            <li className="flex items-start gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
-              <span>تصفح المنتجات في علي إكسبريس أعلاه</span>
+          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-600" />
+            كيفية الطلب
+          </h3>
+          <ol className="space-y-3 text-gray-600 text-sm">
+            <li className="flex items-start gap-3">
+              <span className="w-7 h-7 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">1</span>
+              <div>
+                <p className="font-medium text-gray-800">تصفح علي إكسبريس</p>
+                <p className="text-gray-500 text-xs">اضغط على البطاقة أعلاه لتصفح المنتجات</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
-              <span>انسخ رابط المنتج واضغط على زر "إضافة للسلة"</span>
+            <li className="flex items-start gap-3">
+              <span className="w-7 h-7 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">2</span>
+              <div>
+                <p className="font-medium text-gray-800">أضف للسلة</p>
+                <p className="text-gray-500 text-xs">اضغط زر الإضافة وأدخل تفاصيل المنتج</p>
+              </div>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
-              <span>أكمل عملية الدفع واستلم طلبك</span>
+            <li className="flex items-start gap-3">
+              <span className="w-7 h-7 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold">3</span>
+              <div>
+                <p className="font-medium text-gray-800">ادفع واستلم</p>
+                <p className="text-gray-500 text-xs">أكمل الدفع وتابع طلبك حتى التسليم</p>
+              </div>
             </li>
           </ol>
         </div>
       </motion.div>
-
-      {/* Floating Add Button */}
-      <motion.button
-        data-testid="add-to-cart-floating-btn"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", delay: 0.8 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setShowAddModal(true)}
-        className="fixed bottom-28 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-2 pulse-glow z-30"
-      >
-        <Plus className="w-5 h-5" />
-        <span className="font-bold">إضافة إلى سلة وصول</span>
-      </motion.button>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 glass h-20 flex items-center justify-around z-40 safe-bottom">
@@ -236,133 +249,6 @@ const BrowsePage = () => {
           <span className="text-xs">حسابي</span>
         </button>
       </nav>
-
-      {/* Add to Cart Modal */}
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="glass border-0 rounded-3xl max-w-md mx-4">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-center">إضافة منتج للسلة</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">اسم المنتج *</label>
-              <Input
-                data-testid="product-name-input"
-                placeholder="مثال: هاتف سامسونج"
-                value={productData.product_name}
-                onChange={(e) => setProductData({ ...productData, product_name: e.target.value })}
-                className="rounded-xl h-12 bg-white/50"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">رابط المنتج</label>
-              <Input
-                data-testid="product-url-input"
-                placeholder="https://ar.aliexpress.com/item/..."
-                value={productData.product_url}
-                onChange={(e) => setProductData({ ...productData, product_url: e.target.value })}
-                className="rounded-xl h-12 bg-white/50"
-                dir="ltr"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">رابط صورة المنتج</label>
-              <Input
-                data-testid="product-image-input"
-                placeholder="https://..."
-                value={productData.product_image}
-                onChange={(e) => setProductData({ ...productData, product_image: e.target.value })}
-                className="rounded-xl h-12 bg-white/50"
-                dir="ltr"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">السعر (دولار) *</label>
-                <Input
-                  data-testid="product-price-input"
-                  type="number"
-                  placeholder="0.00"
-                  value={productData.price}
-                  onChange={(e) => setProductData({ ...productData, price: e.target.value })}
-                  className="rounded-xl h-12 bg-white/50"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">الكمية</label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setProductData({ ...productData, quantity: Math.max(1, productData.quantity - 1) })}
-                    className="rounded-xl"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <span className="w-12 text-center font-bold">{productData.quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setProductData({ ...productData, quantity: productData.quantity + 1 })}
-                    className="rounded-xl"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">المقاس</label>
-                <Input
-                  data-testid="product-size-input"
-                  placeholder="XL, 42, ..."
-                  value={productData.size}
-                  onChange={(e) => setProductData({ ...productData, size: e.target.value })}
-                  className="rounded-xl h-12 bg-white/50"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">اللون</label>
-                <Input
-                  data-testid="product-color-input"
-                  placeholder="أسود، أبيض، ..."
-                  value={productData.color}
-                  onChange={(e) => setProductData({ ...productData, color: e.target.value })}
-                  className="rounded-xl h-12 bg-white/50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">ملاحظات</label>
-              <Textarea
-                data-testid="product-notes-input"
-                placeholder="أي ملاحظات إضافية..."
-                value={productData.notes}
-                onChange={(e) => setProductData({ ...productData, notes: e.target.value })}
-                className="rounded-xl bg-white/50 resize-none"
-                rows={3}
-              />
-            </div>
-
-            <Button
-              data-testid="confirm-add-to-cart-btn"
-              onClick={handleAddToCart}
-              className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all"
-            >
-              <ShoppingBag className="w-5 h-5 ml-2" />
-              أضف إلى سلة وصول
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
