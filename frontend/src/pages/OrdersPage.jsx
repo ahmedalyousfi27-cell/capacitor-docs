@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Package, Clock, CheckCircle, Truck, Plane, MapPin, Home, ShoppingBag, User, MessageCircle } from "lucide-react";
+import { ArrowRight, Package, Clock, CheckCircle, Truck, Plane, MapPin, Home, ShoppingBag, User, MessageCircle, DollarSign } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 
@@ -9,12 +9,12 @@ const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 const WHATSAPP_NUMBER = "+967736536150";
 
 const STATUS_CONFIG = {
-  pending_review: { label: "قيد المراجعة", icon: Clock, color: "text-amber-600", bg: "bg-amber-100" },
-  paid: { label: "تم الدفع", icon: CheckCircle, color: "text-green-600", bg: "bg-green-100" },
-  purchasing: { label: "قيد الشراء", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-100" },
-  shipped: { label: "تم الشحن", icon: Truck, color: "text-purple-600", bg: "bg-purple-100" },
-  arrived_yemen: { label: "وصل إلى اليمن", icon: Plane, color: "text-cyan-600", bg: "bg-cyan-100" },
-  completed: { label: "مكتمل", icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-100" }
+  pending_review: { label: "قيد المراجعة", icon: Clock, color: "text-amber-600", bg: "bg-amber-100", emoji: "⏳" },
+  paid: { label: "تم الدفع", icon: DollarSign, color: "text-green-600", bg: "bg-green-100", emoji: "💰" },
+  purchasing: { label: "جاري الشراء", icon: ShoppingBag, color: "text-blue-600", bg: "bg-blue-100", emoji: "🛍️" },
+  shipped: { label: "تم الشحن", icon: Truck, color: "text-purple-600", bg: "bg-purple-100", emoji: "✈️" },
+  arrived_yemen: { label: "وصل إلى اليمن", icon: Plane, color: "text-cyan-600", bg: "bg-cyan-100", emoji: "🇾🇪" },
+  completed: { label: "مكتمل", icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-100", emoji: "✅" }
 };
 
 const STATUS_STEPS = ["pending_review", "paid", "purchasing", "shipped", "arrived_yemen", "completed"];
@@ -119,7 +119,7 @@ const OrdersPage = () => {
                       <p className="font-bold text-gray-800">{order.order_id}</p>
                     </div>
                     <div className={`flex items-center gap-1 px-3 py-1 rounded-full ${statusConfig.bg}`}>
-                      <StatusIcon className={`w-4 h-4 ${statusConfig.color}`} />
+                      <span className="text-sm">{statusConfig.emoji}</span>
                       <span className={`text-sm font-medium ${statusConfig.color}`}>
                         {statusConfig.label}
                       </span>
@@ -148,6 +148,21 @@ const OrdersPage = () => {
                     )}
                   </div>
 
+                  {/* Items Summary */}
+                  <div className="mb-4 text-sm text-gray-600">
+                    {order.items?.slice(0, 2).map((item, i) => (
+                      <p key={i} className="truncate">
+                        • {item.product_name}
+                        {item.size && ` - ${item.size}`}
+                        {item.color && ` - ${item.color}`}
+                        <span className="text-blue-600 font-medium mr-1">({item.price} SAR)</span>
+                      </p>
+                    ))}
+                    {order.items?.length > 2 && (
+                      <p className="text-gray-400">و {order.items.length - 2} منتجات أخرى...</p>
+                    )}
+                  </div>
+
                   {/* Status Timeline */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between relative">
@@ -158,18 +173,18 @@ const OrdersPage = () => {
                         />
                       </div>
                       {STATUS_STEPS.map((step, i) => {
-                        const StepIcon = STATUS_CONFIG[step].icon;
+                        const StepConfig = STATUS_CONFIG[step];
                         const isActive = i <= currentStep;
                         return (
                           <div key={step} className="relative z-10 flex flex-col items-center">
                             <div
-                              className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
                                 isActive
                                   ? "bg-gradient-to-br from-blue-600 to-purple-600 text-white"
                                   : "bg-gray-200 text-gray-400"
                               }`}
                             >
-                              <StepIcon className="w-3 h-3" />
+                              {isActive ? StepConfig.emoji : i + 1}
                             </div>
                           </div>
                         );
@@ -181,7 +196,7 @@ const OrdersPage = () => {
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                     <div>
                       <p className="text-sm text-gray-500">الإجمالي</p>
-                      <p className="font-bold text-lg gradient-text">${order.grand_total?.toFixed(2)}</p>
+                      <p className="font-bold text-lg gradient-text">{order.grand_total?.toFixed(2)} SAR</p>
                     </div>
                     <Button
                       data-testid={`whatsapp-btn-${order.order_id}`}
@@ -198,6 +213,11 @@ const OrdersPage = () => {
             })}
           </div>
         )}
+      </div>
+
+      {/* Currency Note */}
+      <div className="px-4 mb-4">
+        <p className="text-xs text-gray-500 text-center">جميع الأسعار بالريال السعودي (SAR)</p>
       </div>
 
       {/* Bottom Navigation */}
