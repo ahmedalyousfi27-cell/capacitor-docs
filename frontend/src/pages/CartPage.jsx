@@ -152,7 +152,7 @@ const CartPage = () => {
                         {item.size && item.color && " | "}
                         {item.color && `اللون: ${item.color}`}
                       </p>
-                      <p className="text-lg font-bold text-blue-600 mt-2">${item.price.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-blue-600 mt-2">{item.price.toFixed(2)} SAR</p>
                     </div>
 
                     {/* Delete Button */}
@@ -207,17 +207,18 @@ const CartPage = () => {
           animate={{ y: 0, opacity: 1 }}
           className="fixed bottom-0 left-0 right-0 glass p-4 safe-bottom"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
             <span className="text-gray-600">المجموع</span>
-            <span className="text-2xl font-bold gradient-text">${total.toFixed(2)}</span>
+            <span className="text-2xl font-bold gradient-text">{total.toFixed(2)} SAR</span>
           </div>
+          <p className="text-xs text-gray-500 mb-3 text-center">جميع الأسعار بالريال السعودي (SAR)</p>
           <Button
             data-testid="checkout-btn"
             onClick={() => navigate("/addresses")}
             className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all"
           >
             <Package className="w-5 h-5 ml-2" />
-            متابعة إلى الدفع
+            تابع للدفع
           </Button>
         </motion.div>
       )}
