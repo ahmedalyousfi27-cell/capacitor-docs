@@ -45,7 +45,7 @@ const AdminDashboard = () => {
     { label: "طلبات جديدة", value: stats?.new_orders || 0, icon: Clock, color: "from-amber-500 to-orange-600" },
     { label: "طلبات جارية", value: stats?.in_progress || 0, icon: Package, color: "from-blue-500 to-cyan-600" },
     { label: "طلبات مكتملة", value: stats?.completed || 0, icon: CheckCircle, color: "from-green-500 to-emerald-600" },
-    { label: "إجمالي المبيعات", value: `$${(stats?.total_sales || 0).toFixed(2)}`, icon: DollarSign, color: "from-purple-500 to-pink-600" }
+    { label: "إجمالي المبيعات", value: `${(stats?.total_sales || 0).toFixed(2)} SAR`, icon: DollarSign, color: "from-purple-500 to-pink-600" }
   ];
 
   const menuItems = [
