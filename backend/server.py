@@ -495,6 +495,8 @@ async def get_settings(user: User = Depends(get_admin_user)):
         doc = default_settings.model_dump()
         doc["updated_at"] = doc["updated_at"].isoformat()
         await db.settings.insert_one(doc)
+        # Return without _id field
+        doc.pop("_id", None)
         return doc
     return settings
 
