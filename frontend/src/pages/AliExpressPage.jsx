@@ -104,7 +104,7 @@ const AliExpressPage = () => {
             </div>
             <div>
               <h1 className="text-white font-bold text-lg">علي إكسبريس</h1>
-              <p className="text-white/70 text-xs">بالريال السعودي 🇸🇦</p>
+              <p className="text-white/70 text-xs">الشحن للسعودية 🇸🇦 | USD</p>
             </div>
           </div>
         </div>
