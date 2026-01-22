@@ -5,13 +5,17 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import re
+import json
 from pathlib import Path
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+from urllib.parse import quote, unquote
 import base64
 import httpx
+from bs4 import BeautifulSoup
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,6 +24,10 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Crawlbase API configuration
+CRAWLBASE_TOKEN = "ALNrqZRqcq15VIIL3KepFg"
+CRAWLBASE_API = "https://api.crawlbase.com"
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
