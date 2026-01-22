@@ -151,6 +151,7 @@ function AppRouter() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/browse" element={<ProtectedRoute><BrowsePage /></ProtectedRoute>} />
         <Route path="/aliexpress" element={<ProtectedRoute><AliExpressPage /></ProtectedRoute>} />
+        <Route path="/product" element={<ProtectedRoute><ProductDetailPage /></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
         <Route path="/addresses" element={<ProtectedRoute><AddressesPage /></ProtectedRoute>} />
         <Route path="/payment/:orderId" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
