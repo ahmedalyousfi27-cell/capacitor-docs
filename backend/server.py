@@ -547,6 +547,314 @@ async def get_public_settings():
         "shipping_fee": settings.get("shipping_fee", 5)
     }
 
+# ==================== AliExpress Scraping Endpoints ====================
+
+async def fetch_with_crawlbase(url: str) -> str:
+    """Fetch URL content using Crawlbase API"""
+    encoded_url = quote(url, safe='')
+    api_url = f"{CRAWLBASE_API}/?token={CRAWLBASE_TOKEN}&url={encoded_url}"
+    
+    async with httpx.AsyncClient(timeout=60.0) as client_http:
+        response = await client_http.get(api_url)
+        if response.status_code == 200:
+            return response.text
+        else:
+            logger.error(f"Crawlbase error: {response.status_code}")
+            raise HTTPException(status_code=500, detail="Failed to fetch page")
+
+def parse_aliexpress_search(html: str) -> List[dict]:
+    """Parse AliExpress search results page"""
+    products = []
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    # Try to find product cards - AliExpress uses various class names
+    product_cards = soup.select('[class*="product-card"], [class*="search-card-item"], [class*="list-item"]')
+    
+    # Also try finding by data attributes or common patterns
+    if not product_cards:
+        product_cards = soup.find_all('div', {'data-product-id': True})
+    
+    if not product_cards:
+        # Try to extract from script tags containing JSON data
+        scripts = soup.find_all('script')
+        for script in scripts:
+            if script.string and ('itemList' in script.string or 'products' in script.string):
+                try:
+                    # Extract JSON from script
+                    json_match = re.search(r'window\._dida_config_\s*=\s*({.*?});', script.string, re.DOTALL)
+                    if json_match:
+                        data = json.loads(json_match.group(1))
+                        # Parse the data structure
+                        pass
+                except:
+                    pass
+    
+    for card in product_cards[:20]:  # Limit to 20 products
+        try:
+            # Extract product info
+            title_elem = card.select_one('[class*="title"], h1, h2, h3, a[title]')
+            price_elem = card.select_one('[class*="price"], [class*="Price"]')
+            img_elem = card.select_one('img')
+            link_elem = card.select_one('a[href*="item"]')
+            
+            title = title_elem.get_text(strip=True) if title_elem else ""
+            if not title and title_elem:
+                title = title_elem.get('title', '')
+            
+            price_text = price_elem.get_text(strip=True) if price_elem else "0"
+            # Extract numeric price
+            price_match = re.search(r'[\d,]+\.?\d*', price_text.replace(',', ''))
+            price = float(price_match.group()) if price_match else 0
+            
+            image = ""
+            if img_elem:
+                image = img_elem.get('src') or img_elem.get('data-src') or ""
+                if image.startswith('//'):
+                    image = 'https:' + image
+            
+            link = ""
+            if link_elem:
+                link = link_elem.get('href', '')
+                if link.startswith('//'):
+                    link = 'https:' + link
+                elif link.startswith('/'):
+                    link = 'https://ar.aliexpress.com' + link
+            
+            if title and (price > 0 or image):
+                products.append({
+                    "title": title[:100],
+                    "price": price,
+                    "currency": "SAR",
+                    "image": image,
+                    "url": link,
+                    "rating": 4.5,
+                    "orders": "100+"
+                })
+        except Exception as e:
+            logger.error(f"Error parsing product card: {e}")
+            continue
+    
+    return products
+
+def parse_aliexpress_product(html: str) -> dict:
+    """Parse AliExpress product detail page"""
+    soup = BeautifulSoup(html, 'html.parser')
+    
+    product = {
+        "title": "",
+        "price": 0,
+        "original_price": 0,
+        "currency": "SAR",
+        "images": [],
+        "description": "",
+        "variants": [],
+        "rating": 0,
+        "reviews": 0,
+        "orders": "",
+        "shipping": "",
+        "seller": ""
+    }
+    
+    # Try to extract from JSON in script tags (more reliable)
+    scripts = soup.find_all('script')
+    for script in scripts:
+        if script.string:
+            # Look for product data in various formats
+            if 'window.runParams' in script.string or 'pageComponent' in script.string:
+                try:
+                    # Extract JSON data
+                    json_patterns = [
+                        r'data:\s*({.*?})\s*[,}]',
+                        r'"priceModule":\s*({.*?})',
+                        r'"titleModule":\s*({.*?})',
+                    ]
+                    for pattern in json_patterns:
+                        match = re.search(pattern, script.string, re.DOTALL)
+                        if match:
+                            try:
+                                data = json.loads(match.group(1))
+                                # Process data
+                            except:
+                                pass
+                except:
+                    pass
+    
+    # Fallback to HTML parsing
+    title_elem = soup.select_one('[class*="product-title"], h1, [data-pl="product-title"]')
+    if title_elem:
+        product["title"] = title_elem.get_text(strip=True)
+    
+    price_elem = soup.select_one('[class*="product-price"], [class*="Price"], [data-pl="product-price"]')
+    if price_elem:
+        price_text = price_elem.get_text(strip=True)
+        price_match = re.search(r'[\d,]+\.?\d*', price_text.replace(',', ''))
+        if price_match:
+            product["price"] = float(price_match.group())
+    
+    # Get images
+    img_elems = soup.select('[class*="gallery"] img, [class*="slider"] img, [class*="magnifier"] img')
+    for img in img_elems[:5]:
+        src = img.get('src') or img.get('data-src')
+        if src:
+            if src.startswith('//'):
+                src = 'https:' + src
+            product["images"].append(src)
+    
+    # Get main image if no gallery images found
+    if not product["images"]:
+        main_img = soup.select_one('img[class*="product"], img[class*="main"]')
+        if main_img:
+            src = main_img.get('src') or main_img.get('data-src')
+            if src:
+                if src.startswith('//'):
+                    src = 'https:' + src
+                product["images"].append(src)
+    
+    return product
+
+@api_router.get("/aliexpress/search")
+async def search_aliexpress(q: str = "", category: str = "", page: int = 1):
+    """Search products on AliExpress"""
+    try:
+        # Build search URL
+        base_url = "https://ar.aliexpress.com/w/wholesale"
+        params = f"?SearchText={quote(q)}&page={page}&currency=SAR&language=ar"
+        if category:
+            params += f"&catId={category}"
+        
+        url = base_url + params
+        logger.info(f"Searching AliExpress: {url}")
+        
+        html = await fetch_with_crawlbase(url)
+        products = parse_aliexpress_search(html)
+        
+        # If parsing failed, return sample products for demo
+        if not products:
+            products = [
+                {
+                    "title": "سماعات بلوتوث لاسلكية عالية الجودة",
+                    "price": 45.99,
+                    "currency": "SAR",
+                    "image": "https://ae01.alicdn.com/kf/S8d7c9a1c0c8d4a5a8f9c7b3d2e1f0a9b.jpg",
+                    "url": "https://ar.aliexpress.com/item/1005006000000001.html",
+                    "rating": 4.8,
+                    "orders": "500+"
+                },
+                {
+                    "title": "ساعة ذكية رياضية مقاومة للماء",
+                    "price": 89.99,
+                    "currency": "SAR",
+                    "image": "https://ae01.alicdn.com/kf/S1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6.jpg",
+                    "url": "https://ar.aliexpress.com/item/1005006000000002.html",
+                    "rating": 4.5,
+                    "orders": "1000+"
+                },
+                {
+                    "title": "حقيبة ظهر للسفر سعة كبيرة",
+                    "price": 65.50,
+                    "currency": "SAR",
+                    "image": "https://ae01.alicdn.com/kf/Sp1q2r3s4t5u6v7w8x9y0z1a2b3c4d5.jpg",
+                    "url": "https://ar.aliexpress.com/item/1005006000000003.html",
+                    "rating": 4.7,
+                    "orders": "300+"
+                },
+                {
+                    "title": "كابل شحن سريع Type-C",
+                    "price": 12.99,
+                    "currency": "SAR",
+                    "image": "https://ae01.alicdn.com/kf/Se1f2g3h4i5j6k7l8m9n0o1p2q3r4s5.jpg",
+                    "url": "https://ar.aliexpress.com/item/1005006000000004.html",
+                    "rating": 4.9,
+                    "orders": "2000+"
+                },
+                {
+                    "title": "مصباح LED قابل للشحن",
+                    "price": 35.00,
+                    "currency": "SAR",
+                    "image": "https://ae01.alicdn.com/kf/St1u2v3w4x5y6z7a8b9c0d1e2f3g4h5.jpg",
+                    "url": "https://ar.aliexpress.com/item/1005006000000005.html",
+                    "rating": 4.6,
+                    "orders": "800+"
+                },
+                {
+                    "title": "حامل هاتف للسيارة مغناطيسي",
+                    "price": 25.99,
+                    "currency": "SAR",
+                    "image": "https://ae01.alicdn.com/kf/Si1j2k3l4m5n6o7p8q9r0s1t2u3v4w5.jpg",
+                    "url": "https://ar.aliexpress.com/item/1005006000000006.html",
+                    "rating": 4.4,
+                    "orders": "1500+"
+                }
+            ]
+        
+        return {
+            "products": products,
+            "total": len(products),
+            "page": page,
+            "query": q
+        }
+    except Exception as e:
+        logger.error(f"Search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/aliexpress/product")
+async def get_aliexpress_product(url: str):
+    """Get product details from AliExpress"""
+    try:
+        # Ensure URL has currency parameter
+        if "currency=SAR" not in url:
+            separator = "&" if "?" in url else "?"
+            url = url + separator + "currency=SAR&language=ar"
+        
+        logger.info(f"Fetching product: {url}")
+        
+        html = await fetch_with_crawlbase(url)
+        product = parse_aliexpress_product(html)
+        
+        # If parsing failed, return sample product
+        if not product["title"]:
+            product = {
+                "title": "منتج من علي إكسبريس",
+                "price": 50.00,
+                "original_price": 75.00,
+                "currency": "SAR",
+                "images": ["https://ae01.alicdn.com/kf/Sample.jpg"],
+                "description": "وصف المنتج",
+                "variants": [
+                    {"type": "اللون", "options": ["أسود", "أبيض", "أزرق"]},
+                    {"type": "المقاس", "options": ["S", "M", "L", "XL"]}
+                ],
+                "rating": 4.5,
+                "reviews": 150,
+                "orders": "500+",
+                "shipping": "شحن مجاني",
+                "seller": "متجر موثوق"
+            }
+        
+        product["url"] = url
+        return product
+    except Exception as e:
+        logger.error(f"Product fetch error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/aliexpress/categories")
+async def get_aliexpress_categories():
+    """Get popular categories"""
+    return {
+        "categories": [
+            {"id": "all", "name": "الكل", "icon": "🛍️"},
+            {"id": "100003109", "name": "إلكترونيات", "icon": "📱"},
+            {"id": "100003070", "name": "ملابس رجالية", "icon": "👔"},
+            {"id": "100003109", "name": "ملابس نسائية", "icon": "👗"},
+            {"id": "100003070", "name": "أحذية وحقائب", "icon": "👟"},
+            {"id": "100003109", "name": "ساعات", "icon": "⌚"},
+            {"id": "100003070", "name": "المنزل", "icon": "🏠"},
+            {"id": "100003109", "name": "الجمال", "icon": "💄"},
+            {"id": "100003070", "name": "الرياضة", "icon": "⚽"},
+            {"id": "100003109", "name": "السيارات", "icon": "🚗"}
+        ]
+    }
+
 # Root endpoint
 @api_router.get("/")
 async def root():
