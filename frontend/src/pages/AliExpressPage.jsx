@@ -1,123 +1,109 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Plus, X, Minus, ShoppingBag, RefreshCw, Home } from "lucide-react";
+import { ArrowRight, Search, ShoppingBag, Star, Filter, RefreshCw, Home, Package, User, Plus, Loader2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { toast } from "sonner";
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
-// AliExpress Arabic - Fixed SAR currency and Arabic language (DO NOT CHANGE)
-const ALIEXPRESS_URL = "https://ar.aliexpress.com/?currencyCode=SAR&language=ar";
-
 const AliExpressPage = () => {
   const navigate = useNavigate();
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [cartCount, setCartCount] = useState(0);
-  const [iframeKey, setIframeKey] = useState(0);
-  const [productData, setProductData] = useState({
-    product_name: "",
-    product_url: "",
-    product_image: "",
-    price: "",
-    quantity: 1,
-    size: "",
-    color: "",
-    notes: ""
-  });
 
   useEffect(() => {
-    // Fetch cart count
-    fetch(`${API_URL}/cart`, { credentials: "include" })
-      .then(res => res.json())
-      .then(items => setCartCount(items.length))
-      .catch(console.error);
+    fetchCategories();
+    fetchProducts();
+    fetchCartCount();
   }, []);
 
-  const handleAddToCart = async () => {
-    if (!productData.product_name || !productData.price) {
-      toast.error("يرجى إدخال اسم المنتج والسعر");
-      return;
-    }
-
+  const fetchCartCount = async () => {
     try {
-      const response = await fetch(`${API_URL}/cart`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          ...productData,
-          price: parseFloat(productData.price),
-          product_url: productData.product_url || ALIEXPRESS_URL,
-          product_image: productData.product_image || "https://via.placeholder.com/150"
-        })
-      });
-
-      if (response.ok) {
-        toast.success("تمت إضافة المنتج للسلة");
-        setCartCount(prev => prev + 1);
-        setShowAddModal(false);
-        setProductData({
-          product_name: "",
-          product_url: "",
-          product_image: "",
-          price: "",
-          quantity: 1,
-          size: "",
-          color: "",
-          notes: ""
-        });
-      }
+      const response = await fetch(`${API_URL}/cart`, { credentials: "include" });
+      const items = await response.json();
+      setCartCount(items.length);
     } catch (error) {
-      toast.error("حدث خطأ أثناء الإضافة");
+      console.error("Error fetching cart:", error);
     }
   };
 
-  const refreshIframe = () => {
-    setIframeKey(prev => prev + 1);
-    toast.success("تم تحديث الصفحة");
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_URL}/aliexpress/categories`);
+      const data = await response.json();
+      setCategories(data.categories);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchProducts = async (query = "", category = "") => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (query) params.append("q", query);
+      if (category && category !== "all") params.append("category", category);
+      
+      const response = await fetch(`${API_URL}/aliexpress/search?${params}`);
+      const data = await response.json();
+      setProducts(data.products || []);
+    } catch (error) {
+      toast.error("خطأ في تحميل المنتجات");
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchProducts(searchQuery, selectedCategory);
+  };
+
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategory(categoryId);
+    fetchProducts(searchQuery, categoryId);
+  };
+
+  const handleProductClick = (product) => {
+    navigate("/product", { state: { product } });
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-white pb-24">
       {/* Header */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-gradient-to-r from-orange-500 via-red-500 to-red-600 px-4 py-3 flex items-center justify-between shadow-lg"
+        className="sticky top-0 z-50 bg-gradient-to-r from-orange-500 via-red-500 to-red-600 px-4 py-3 shadow-lg"
       >
-        <div className="flex items-center gap-3">
-          <Button
-            data-testid="back-btn"
-            variant="ghost"
-            onClick={() => navigate("/browse")}
-            className="rounded-xl text-white hover:bg-white/20 p-2"
-          >
-            <ArrowRight className="w-6 h-6" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-red-500 font-black text-sm">Ali</span>
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-lg">علي إكسبريس</h1>
-              <p className="text-white/70 text-xs">بالريال السعودي 🇸🇦 SAR</p>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <Button
+              data-testid="back-btn"
+              variant="ghost"
+              onClick={() => navigate("/browse")}
+              className="rounded-xl text-white hover:bg-white/20 p-2"
+            >
+              <ArrowRight className="w-6 h-6" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-red-500 font-black text-sm">Ali</span>
+              </div>
+              <div>
+                <h1 className="text-white font-bold text-lg">علي إكسبريس</h1>
+                <p className="text-white/70 text-xs">بالريال السعودي 🇸🇦 SAR</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            data-testid="refresh-btn"
-            variant="ghost"
-            onClick={refreshIframe}
-            className="rounded-xl text-white hover:bg-white/20 p-2"
-          >
-            <RefreshCw className="w-5 h-5" />
-          </Button>
           <Button
             data-testid="cart-btn"
             variant="ghost"
@@ -132,179 +118,185 @@ const AliExpressPage = () => {
             )}
           </Button>
         </div>
+
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Input
+              data-testid="search-input"
+              placeholder="ابحث عن منتج..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pr-10 rounded-xl h-11 bg-white border-0"
+            />
+          </div>
+          <Button
+            type="submit"
+            className="rounded-xl bg-white text-red-500 hover:bg-white/90 px-4"
+          >
+            بحث
+          </Button>
+        </form>
       </motion.header>
 
-      {/* WebView Container - Full Screen */}
-      <div className="flex-1 relative">
-        <iframe
-          key={iframeKey}
-          data-testid="aliexpress-iframe"
-          src={ALIEXPRESS_URL}
-          className="w-full h-full border-0"
-          style={{ minHeight: "calc(100vh - 140px)" }}
-          title="AliExpress Saudi Arabia"
-          sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
-          allow="clipboard-write"
-        />
+      {/* Categories */}
+      <div className="px-4 py-3 overflow-x-auto">
+        <div className="flex gap-2">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryChange(category.id)}
+              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                selectedCategory === category.id
+                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                  : "bg-white/70 text-gray-700 hover:bg-white"
+              }`}
+            >
+              <span className="ml-1">{category.icon}</span>
+              {category.name}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Floating Add Button */}
+      {/* Products Grid */}
+      <div className="px-4 py-4">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+            <p className="text-gray-500">جاري تحميل المنتجات...</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-12 h-12 text-gray-400" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">لا توجد منتجات</h2>
+            <p className="text-gray-500">جرب البحث بكلمات مختلفة</p>
+          </div>
+        ) : (
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={{
+              hidden: { opacity: 0 },
+              show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+            }}
+            className="grid grid-cols-2 gap-3"
+          >
+            {products.map((product, index) => (
+              <motion.div
+                key={index}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  show: { opacity: 1, y: 0 }
+                }}
+                onClick={() => handleProductClick(product)}
+                className="glass rounded-2xl overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+              >
+                {/* Product Image */}
+                <div className="relative aspect-square bg-gray-100">
+                  <img
+                    src={product.image || "https://via.placeholder.com/200"}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => { e.target.src = "https://via.placeholder.com/200?text=No+Image"; }}
+                  />
+                  {/* Discount Badge */}
+                  {product.original_price && product.original_price > product.price && (
+                    <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg">
+                      -{Math.round((1 - product.price / product.original_price) * 100)}%
+                    </span>
+                  )}
+                </div>
+
+                {/* Product Info */}
+                <div className="p-3">
+                  <h3 className="text-sm font-medium text-gray-800 line-clamp-2 mb-2 h-10">
+                    {product.title}
+                  </h3>
+                  
+                  <div className="flex items-center gap-1 mb-2">
+                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    <span className="text-xs text-gray-600">{product.rating}</span>
+                    <span className="text-xs text-gray-400">| {product.orders} طلب</span>
+                  </div>
+
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-lg font-bold text-red-500">
+                        {product.price?.toFixed(2)} <span className="text-xs">SAR</span>
+                      </p>
+                      {product.original_price && product.original_price > product.price && (
+                        <p className="text-xs text-gray-400 line-through">
+                          {product.original_price?.toFixed(2)} SAR
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleProductClick(product);
+                      }}
+                      className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
+
+      {/* Refresh Button */}
       <motion.button
-        data-testid="add-to-cart-floating-btn"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ type: "spring", delay: 0.5 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setShowAddModal(true)}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-2 pulse-glow z-40"
+        transition={{ delay: 0.5 }}
+        onClick={() => fetchProducts(searchQuery, selectedCategory)}
+        className="fixed bottom-28 left-4 w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-700 hover:bg-gray-50"
       >
-        <Plus className="w-5 h-5" />
-        <span className="font-bold">إضافة إلى سلة وصول</span>
+        <RefreshCw className="w-5 h-5" />
       </motion.button>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="fixed bottom-24 right-4 flex flex-col gap-2 z-40"
-      >
-        <Button
-          data-testid="home-btn"
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 glass h-20 flex items-center justify-around z-40 safe-bottom">
+        <button
+          data-testid="nav-home"
           onClick={() => navigate("/browse")}
-          className="w-12 h-12 rounded-full bg-white shadow-lg text-gray-700 hover:bg-gray-50"
+          className="flex flex-col items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
         >
-          <Home className="w-5 h-5" />
-        </Button>
-      </motion.div>
-
-      {/* Add to Cart Modal */}
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
-        <DialogContent className="glass border-0 rounded-3xl max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-center">إضافة منتج للسلة</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">اسم المنتج *</label>
-              <Input
-                data-testid="product-name-input"
-                placeholder="مثال: هاتف سامسونج"
-                value={productData.product_name}
-                onChange={(e) => setProductData({ ...productData, product_name: e.target.value })}
-                className="rounded-xl h-12 bg-white/50"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">رابط المنتج</label>
-              <Input
-                data-testid="product-url-input"
-                placeholder="https://ar.aliexpress.com/item/..."
-                value={productData.product_url}
-                onChange={(e) => setProductData({ ...productData, product_url: e.target.value })}
-                className="rounded-xl h-12 bg-white/50"
-                dir="ltr"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">رابط صورة المنتج</label>
-              <Input
-                data-testid="product-image-input"
-                placeholder="https://..."
-                value={productData.product_image}
-                onChange={(e) => setProductData({ ...productData, product_image: e.target.value })}
-                className="rounded-xl h-12 bg-white/50"
-                dir="ltr"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">السعر (ريال سعودي SAR) *</label>
-                <Input
-                  data-testid="product-price-input"
-                  type="number"
-                  placeholder="0.00"
-                  value={productData.price}
-                  onChange={(e) => setProductData({ ...productData, price: e.target.value })}
-                  className="rounded-xl h-12 bg-white/50"
-                  dir="ltr"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">الكمية</label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setProductData({ ...productData, quantity: Math.max(1, productData.quantity - 1) })}
-                    className="rounded-xl"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </Button>
-                  <span className="w-12 text-center font-bold">{productData.quantity}</span>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setProductData({ ...productData, quantity: productData.quantity + 1 })}
-                    className="rounded-xl"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">المقاس</label>
-                <Input
-                  data-testid="product-size-input"
-                  placeholder="XL, 42, ..."
-                  value={productData.size}
-                  onChange={(e) => setProductData({ ...productData, size: e.target.value })}
-                  className="rounded-xl h-12 bg-white/50"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">اللون</label>
-                <Input
-                  data-testid="product-color-input"
-                  placeholder="أسود، أبيض، ..."
-                  value={productData.color}
-                  onChange={(e) => setProductData({ ...productData, color: e.target.value })}
-                  className="rounded-xl h-12 bg-white/50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1 block">ملاحظات</label>
-              <Textarea
-                data-testid="product-notes-input"
-                placeholder="أي ملاحظات إضافية..."
-                value={productData.notes}
-                onChange={(e) => setProductData({ ...productData, notes: e.target.value })}
-                className="rounded-xl bg-white/50 resize-none"
-                rows={3}
-              />
-            </div>
-
-            <Button
-              data-testid="confirm-add-to-cart-btn"
-              onClick={handleAddToCart}
-              className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold text-lg hover:shadow-xl transition-all"
-            >
-              <ShoppingBag className="w-5 h-5 ml-2" />
-              أضف إلى سلة وصول
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          <Home className="w-6 h-6" />
+          <span className="text-xs">الرئيسية</span>
+        </button>
+        <button
+          data-testid="nav-cart"
+          onClick={() => navigate("/cart")}
+          className="flex flex-col items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+        >
+          <ShoppingBag className="w-6 h-6" />
+          <span className="text-xs">السلة</span>
+        </button>
+        <button
+          data-testid="nav-orders"
+          onClick={() => navigate("/orders")}
+          className="flex flex-col items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+        >
+          <Package className="w-6 h-6" />
+          <span className="text-xs">الطلبات</span>
+        </button>
+        <button
+          data-testid="nav-profile"
+          onClick={() => navigate("/profile")}
+          className="flex flex-col items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+        >
+          <User className="w-6 h-6" />
+          <span className="text-xs">حسابي</span>
+        </button>
+      </nav>
     </div>
   );
 };
