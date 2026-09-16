@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0",
+  "description": "Claude Code settings for Capacitor Docs with HyperFrames integration",
+  "skills": [
+    {
+      "name": "hyperframes-editing",
+      "enabled": true,
+      "description": "HyperFrames video editing and montage skill for Capacitor documentation",
+      "path": ".claude/skills/hyperframes-editing",
+      "trigger": [
+        "video",
+        "edit",
+        "montage",
+        "hyperframes",
+        "animation",
+        "gsap"
+      ],
+      "tags": [
+        "video",
+        "editing",
+        "animation",
+        "hyperframes"
+      ]
+    }
+  ],
+  "permissions": {
+    "allow_bash": [
+      "npx hyperframes",
+      "npm install",
+      "git"
+    ],
+    "allow_file_operations": true
+  },
+  "project": {
+    "name": "capacitor-docs",
+    "type": "documentation",
+    "framework": "docusaurus"
+  },
+  "video": {
+    "outputDir": "static/videos",
+    "defaultFormat": "mp4",
+    "defaultResolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "defaultFrameRate": 60,
+    "defaultQuality": "high"
+  },
+  "editor": {
+    "formatOnSave": false,
+    "showLineNumbers": true
+  }
+}
