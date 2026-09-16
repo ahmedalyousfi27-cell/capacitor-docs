@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.remotion/
+output.mp4
+*.mp4
+*.webm
+.DS_Store
+.env
+.env.local

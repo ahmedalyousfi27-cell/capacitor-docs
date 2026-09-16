@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معاينة فيديو مسرة التفاعلي</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', Arial, sans-serif;
+            background: #F7F3EE;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #241D33;
+            margin-bottom: 40px;
+            font-size: 36px;
+        }
+
+        .video-frames {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .frame {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .frame-header {
+            background: linear-gradient(135deg, #70508D 0%, #B99AE8 100%);
+            color: white;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .frame-content {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Dashboard Screen */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #EFE7F7 0%, #FFFDFC 100%);
+            border-left: 4px solid #C7A15F;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .stat-card h3 {
+            color: #70508D;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #241D33;
+        }
+
+        .chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            height: 150px;
+            background: linear-gradient(to top, #EFE7F7, transparent);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #70508D, #B99AE8);
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* Templates Screen */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .template-card {
+            background: linear-gradient(135deg, #FFFDFC 0%, #EFE7F7 100%);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #C7A15F;
+            transition: transform 0.3s;
+        }
+
+        .template-card:hover {
+            transform: translateY(-10px) scale(1.05);
+        }
+
+        .template-emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .template-name {
+            color: #241D33;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Details Screen */
+        .input-field {
+            margin-bottom: 20px;
+        }
+
+        .input-field label {
+            display: block;
+            color: #241D33;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #C7A15F;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #70508D;
+            background: #EFE7F7;
+        }
+
+        .preview-box {
+            background: linear-gradient(135deg, #70508D 0%, #B99AE8 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #70508D 0%, #B99AE8 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        /* Preview Screen */
+        .device-mockup {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .device-frame {
+            background: #241D33;
+            width: 280px;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .device-screen {
+            background: linear-gradient(135deg, #70508D 0%, #B99AE8 100%);
+            border-radius: 30px;
+            padding: 20px;
+            color: white;
+            text-align: center;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .device-status {
+            font-size: 12px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .invitation-preview {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .invitation-emoji {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .invitation-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .share-button {
+            background: #C7A15F;
+            color: #241D33;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .features-list {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            max-width: 300px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #241D33;
+            font-size: 14px;
+        }
+
+        .feature-item::before {
+            content: "✓";
+            color: #C7A15F;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #70508D 0%, #B99AE8 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .stats h2 {
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 معاينة فيديو مسرة التفاعلي</h1>
+        <p style="text-align: center; color: #70508D; margin-bottom: 40px; font-size: 16px;">
+            فيديو إعلاني فاخر مدته 30 ثانية - 4 شاشات تفاعلية ديناميكية
+        </p>
+
+        <div class="video-frames">
+            <!-- Frame 1: Dashboard -->
+            <div class="frame">
+                <div class="frame-header">📊 شاشة 1: لوحة التحكم (0-2 ثانية)</div>
+                <div class="frame-content">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <h3>عدد الدعوات المرسلة</h3>
+                            <div class="number">145</div>
+                        </div>
+                        <div class="stat-card">
+                            <h3>معدل الفتح</h3>
+                            <div class="number">82%</div>
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <div class="bar" style="height: 60%;"></div>
+                        <div class="bar" style="height: 80%;"></div>
+                        <div class="bar" style="height: 70%;"></div>
+                        <div class="bar" style="height: 90%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame 2: Templates -->
+            <div class="frame">
+                <div class="frame-header">🎨 شاشة 2: اختيار القوالب (2-4 ثوانٍ)</div>
+                <div class="frame-content">
+                    <div class="templates-grid">
+                        <div class="template-card">
+                            <div class="template-emoji">💍</div>
+                            <div class="template-name">الزفاف</div>
+                        </div>
+                        <div class="template-card">
+                            <div class="template-emoji">🍽️</div>
+                            <div class="template-name">العشاء</div>
+                        </div>
+                        <div class="template-card">
+                            <div class="template-emoji">🎉</div>
+                            <div class="template-name">الحفلة</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame 3: Details -->
+            <div class="frame">
+                <div class="frame-header">✏️ شاشة 3: الإعدادات (4-6 ثوانٍ)</div>
+                <div class="frame-content">
+                    <div class="input-field">
+                        <label>📝 اسم الحدث</label>
+                        <input type="text" placeholder="مثال: حفل الزفاف" value="حفل الزفاف">
+                    </div>
+                    <div class="input-field">
+                        <label>📅 التاريخ والوقت</label>
+                        <input type="text" placeholder="16/9/2026 - 18:00" value="16/9/2026 - 18:00">
+                    </div>
+                    <div class="input-field">
+                        <label>📍 الموقع</label>
+                        <input type="text" placeholder="الرياض - فندق الفرسان" value="الرياض - فندق الفرسان">
+                    </div>
+                    <div class="preview-box">
+                        ✨ معاينة الدعوة الحية ✨
+                    </div>
+                    <button class="btn-primary">→ المتابعة</button>
+                </div>
+            </div>
+
+            <!-- Frame 4: Preview -->
+            <div class="frame">
+                <div class="frame-header">📱 شاشة 4: المعاينة (6-8 ثوانٍ)</div>
+                <div class="frame-content">
+                    <div class="device-mockup">
+                        <div class="device-frame">
+                            <div class="device-screen">
+                                <div class="device-status">مسرة</div>
+                                <div class="invitation-preview">
+                                    <div class="invitation-emoji">💍</div>
+                                    <div class="invitation-text">
+                                        <strong>حفل الزفاف</strong><br>
+                                        محمد و نور<br>
+                                        16 سبتمبر 2026
+                                    </div>
+                                </div>
+                                <button class="share-button">📤 شارك</button>
+                            </div>
+                        </div>
+                        <div class="features-list">
+                            <strong style="color: #241D33;">مميزات الدعوة:</strong>
+                            <div class="feature-item">تصميم فاخر</div>
+                            <div class="feature-item">رسائل شخصية</div>
+                            <div class="feature-item">إحصائيات حية</div>
+                            <div class="feature-item">مشاركة سهلة</div>
+                            <div class="feature-item">دعم عربي كامل</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <h2>📈 تحسينات الأداء</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">95%</span>
+                    <span class="stat-label">تقليل حجم الملف</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">80%</span>
+                    <span class="stat-label">تحسن سرعة التحميل</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">10+</span>
+                    <span class="stat-label">تأثيرات حركية</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: white; border-radius: 12px; text-align: center;">
+            <p style="color: #70508D; font-size: 14px; margin-bottom: 10px;">
+                ✅ <strong>المشروع جاهز للاستخدام!</strong>
+            </p>
+            <p style="color: #241D33; font-size: 14px;">
+                اتبع تعليمات QUICK_START.md لتثبيت وتخصيص الفيديو في مشروعك
+            </p>
+        </div>
+    </div>
+</body>
+</html>

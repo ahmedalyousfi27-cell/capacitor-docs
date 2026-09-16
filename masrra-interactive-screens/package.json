@@ -1,0 +1,29 @@
+{
+  "name": "masrra-interactive-video",
+  "version": "1.0.0",
+  "description": "Masrra luxury interactive video with React components",
+  "main": "index.js",
+  "scripts": {
+    "dev": "./node_modules/.bin/remotion preview src/Root.tsx",
+    "render": "./node_modules/.bin/remotion render src/Root.tsx MasrraAd --output-format mp4",
+    "build": "./node_modules/.bin/remotion render src/Root.tsx MasrraAd --output-format mp4"
+  },
+  "keywords": [
+    "remotion",
+    "masrra",
+    "video"
+  ],
+  "author": "Masrra Team",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@remotion/cli": "^4.0.525",
+    "@types/node": "^22.20.3",
+    "@types/react": "^18.2.0",
+    "remotion": "^4.0.525",
+    "typescript": "^5.0.0"
+  }
+}
